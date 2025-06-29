@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Formulario Mes y Año</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 400px;
+      margin: 50px auto;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px;
+      width: 100%;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+
+    .error {
+      color: red;
+      margin-top: 10px;
+    }
+
+    .success {
+      color: green;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Formulario de carga</h2>
+  <form id="formulario">
+    <label for="mes">Mes (01 a 12):</label>
+    <input type="number" id="mes" name="mes" min="1" max="12" required>
+
+    <label for="anio">Año (ej. 2025):</label>
+    <input type="number" id="anio" name="anio" min="2000" max="2100" required>
+
+    <button type="submit">Enviar</button>
+    <div id="mensaje" class=""></div>
+  </form>
+
+  <script>
+    const formulario = document.getElementById('formulario');
+    const mensaje = document.getElementById('mensaje');
+    const webhookURL = "https://tuwebhook.n8n.cloud/webhook-prueba"; // REEMPLAZA ESTO
+
+    formulario.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      mensaje.textContent = "";
+      mensaje.className = "";
+
+      const mes = formulario.mes.value.padStart(2, '0');
+      const anio = formulario.anio.value;
+
+      if (mes < "01" || mes > "12") {
+        mensaje.textContent = "Mes inválido. Debe estar entre 01 y 12.";
+        mensaje.className = "error";
+        return;
+      }
+
+      if (anio.length !== 4 || anio < 2000 || anio > 2100) {
+        mensaje.textContent = "Año inválido.";
+        mensaje.className = "error";
+        return;
+      }
+
+      try {
+        const res = await fetch(webhookURL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mes, anio })
+        });
+
+        if (res.ok) {
+          mensaje.textContent = "Datos enviados correctamente.";
+          mensaje.className = "success";
+          formulario.reset();
+        } else {
+          mensaje.textContent = "Error al enviar los datos.";
+          mensaje.className = "error";
+        }
+      } catch (err) {
+        mensaje.textContent = "Error de conexión.";
+        mensaje.className = "error";
+      }
+    });
+  </script>
+</body>
+</html>
